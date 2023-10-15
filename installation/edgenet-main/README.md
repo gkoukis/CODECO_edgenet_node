@@ -1,3 +1,5 @@
+# From [swnuom/edgenet](https://github.com/swnuom/edgenet) forked from [EdgeNet-project/edgenet](https://github.com/EdgeNet-project/edgenet)
+
 <p align="center">
     <img src="assets/logos/edgenet_logos_2020_05_03/edgenet_logo_2020_05_03_w_text_300dpi_10pct.png" alt="Welcome to EdgeNet" width="400">
 </p>
