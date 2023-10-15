@@ -1,7 +1,0 @@
-exclude_paths:
-    - ansible_collections/
-    - .github/
-    - .pre-commit-config.yaml
-skip_list:
-    - line-length
-    - role-name

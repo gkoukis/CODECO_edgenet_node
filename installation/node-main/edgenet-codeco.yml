@@ -1,8 +1,0 @@
----
-- hosts: all
-  become: true
-  roles:
-    - edgenet-ssh
-    - edgenet-kubernetes
-  vars_files:
-    - vars/edgenet-codeco.yml
