@@ -1,0 +1,43 @@
+---
+# Simplified version of
+# - https://github.com/geerlingguy/ansible-role-containerd (MIT)
+- name: Ensure APT dependencies are installed
+  apt:
+    name:
+      - apt-transport-https
+      - ca-certificates
+      - gnupg2
+    state: present
+    update_cache: true
+
+- name: Ensure apparmor is installed
+  apt:
+    name: apparmor
+    state: present
+    update_cache: true
+
+- name: Ensure containerd APT GPG key is present
+  apt_key:
+    url: "{{ containerd_apt_gpg_key }}"
+    state: present
+
+- name: Ensure containerd APT repository is present
+  apt_repository:
+    repo: "{{ containerd_apt_repository }}"
+    state: present
+
+- name: Ensure containerd version is pinned in APT preferences
+  template:
+    src: apt-preferences-containerd.j2
+    dest: /etc/apt/preferences.d/containerd
+    mode: 0644
+
+- name: Ensure containerd is installed and up-to-date
+  apt:
+    name: "containerd.io={{ containerd_version }}*"
+    state: present
+    update_cache: true
+    # TODO: Remove `force: true` when the following PR will be merged:
+    # https://github.com/ansible/ansible/pull/74852
+    force: true
+  notify: restart containerd

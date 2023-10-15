@@ -1,0 +1,8 @@
+.idea/
+.vagrant/
+playbook.retry
+*.log
+*.tfstate*
+.terraform*
+node
+nodes.ini

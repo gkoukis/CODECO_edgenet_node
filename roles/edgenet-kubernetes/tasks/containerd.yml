@@ -1,0 +1,25 @@
+---
+- include_tasks: containerd-debian.yml
+  when: ansible_os_family == 'Debian'
+
+- include_tasks: containerd-redhat.yml
+  when: ansible_os_family == 'RedHat'
+
+- name: Ensure containerd config directory exists
+  file:
+    path: /etc/containerd
+    state: directory
+    mode: "0755"
+
+- name: Ensure containerd configuration is up-to-date
+  copy:
+    src: containerd.toml
+    dest: /etc/containerd/config.toml
+    mode: "0644"
+  notify: restart containerd
+
+- name: Ensure containerd enabled at boot (state={{ edgenet_service_state }})
+  systemd:
+    name: containerd
+    state: "{{ edgenet_service_state }}"
+    enabled: true

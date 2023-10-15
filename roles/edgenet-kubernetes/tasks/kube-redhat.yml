@@ -1,0 +1,75 @@
+---
+# Simplified version of
+# - https://github.com/geerlingguy/ansible-role-kubernetes (MIT)
+- name: Ensure Kubernetes YUM GPG keys are present
+  rpm_key:
+    key: "{{ item }}"
+    state: present
+  loop: "{{ kubernetes_yum_gpg_key }}"
+
+- name: Ensure Kubernetes YUM repository is present
+  yum_repository:
+    name: kubernetes
+    description: Kubernetes
+    enabled: true
+    gpgcheck: true
+    repo_gpgcheck: true
+    baseurl: "{{ kubernetes_yum_repo_url }}"
+    gpgkey: "{{ kubernetes_yum_gpg_key }}"
+
+# TODO: Proper dnf/yum detection
+- name: Ensure Kubernetes is not version-locked (yum)
+  lineinfile:
+    path: /etc/yum/pluginconf.d/versionlock.list
+    line: "{{ item }}"
+    state: absent
+  ignore_errors: true
+  loop:
+    - "0:kubeadm*"
+    - "0:kubectl*"
+    - "0:kubelet*"
+
+- name: Ensure Kubernetes is not version-locked (dnf)
+  lineinfile:
+    path: /etc/dnf/plugins/versionlock.list
+    line: "{{ item }}"
+    state: absent
+  ignore_errors: true
+  loop:
+    - "0:kubeadm*"
+    - "0:kubectl*"
+    - "0:kubelet*"
+
+
+- name: Ensure Kubernetes packages are installed and up-to-date
+  tags: ['skip_ansible_lint']
+  yum:
+    name:
+      - "kubeadm-*{{ kubernetes_version }}*"
+      - "kubectl-*{{ kubernetes_version }}*"
+      - "kubelet-*{{ kubernetes_version }}*"
+    state: latest
+    update_cache: true
+  notify: restart kubelet
+
+- name: Ensure Kubernetes is version-locked (yum)
+  lineinfile:
+    path: /etc/yum/pluginconf.d/versionlock.list
+    line: "{{ item }}"
+    state: present
+  ignore_errors: true
+  loop:
+    - "0:kubeadm*"
+    - "0:kubectl*"
+    - "0:kubelet*"
+
+- name: Ensure Kubernetes is version-locked (dnf)
+  lineinfile:
+    path: /etc/dnf/plugins/versionlock.list
+    line: "{{ item }}"
+    state: present
+  ignore_errors: true
+  loop:
+    - "0:kubeadm*"
+    - "0:kubectl*"
+    - "0:kubelet*"
