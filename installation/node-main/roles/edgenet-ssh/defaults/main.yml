@@ -1,0 +1,4 @@
+---
+edgenet_ssh_user: edgenet
+edgenet_ssh_port_alt: 25010
+edgenet_ssh_public_key: ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKjtRjXehOq2CkwI3dsDeec5mC8KxykSoSeywES4nrw9 edgenet.planet-lab.eu (2021)

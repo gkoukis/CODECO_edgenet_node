@@ -1,0 +1,7 @@
+---
+- name: reload sshd
+  service:
+    name: ssh
+    state: reloaded
+  # This may fail in some environment (e.g. Armbian Docker build).
+  ignore_errors: true

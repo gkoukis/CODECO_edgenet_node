@@ -1,0 +1,67 @@
+---
+
+# This is to simplify future Ansible calls, since by default
+# it uses /usr/bin/python which does not exist on Ubuntu.
+- name: Ensure python is python3 on Ubuntu
+  apt:
+    name: python-is-python3
+    state: present
+  # TODO: Symbolic link on old Ubuntu versions
+  when: ansible_distribution == 'Ubuntu' and ansible_distribution_version != '18.04'
+
+- name: Install Wireguard
+  include_tasks: wireguard.yml
+
+# Fix an issue with CoreDNS on systems running systemd-resolved
+# See https://coredns.io/plugins/loop/#troubleshooting-loops-in-kubernetes-clusters
+- name: Check if systemd-resolved is in use
+  stat:
+    path: /run/systemd/resolve/resolv.conf
+  register: resolved_resolv_conf
+
+- name: Ensure native DNS resolvers are used
+  file:
+    src: /run/systemd/resolve/resolv.conf
+    dest: /etc/resolv.conf
+    mode: "0644"
+    state: link
+    # In case /etc/resolv.conf is a file and not a symlink
+    force: true
+  when: resolved_resolv_conf.stat.exists
+
+- name: Ensure EdgeNet directory exists
+  file:
+    path: /opt/edgenet
+    state: directory
+    mode: "0755"
+
+- name: Ensure EdgeNet configuration is present
+  template:
+    src: edgenet-config.yaml.j2
+    dest: /opt/edgenet/config.yaml
+    mode: "0644"
+
+- name: Ensure EdgeNet binary is present
+  get_url:
+    url: "{{ edgenet_node_url }}"
+    # The checksum is necessary for Ansible to re-download the binary if it has changed.
+    checksum: "{{ edgenet_node_checksum }}"
+    dest: /opt/edgenet/node
+    mode: "0755"
+    timeout: 120
+
+- name: Ensure EdgeNet service is present
+  template:
+    src: edgenet.service.j2
+    dest: /etc/systemd/system/edgenet.service
+    mode: "0644"
+
+- name: Flush handlers
+  meta: flush_handlers
+
+- name: "Enable EdgeNet service (state={{ edgenet_service_state }})"
+  systemd:
+    name: edgenet
+    state: "{{ edgenet_service_state }}"
+    enabled: true
+    daemon_reload: true

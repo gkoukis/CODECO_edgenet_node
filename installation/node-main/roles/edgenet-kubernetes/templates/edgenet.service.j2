@@ -1,0 +1,22 @@
+[Unit]
+Description=EdgeNet
+Documentation=https://edge-net.org/
+# testbed.service is the GENI EmuLab service that changes the hostname.
+After=ssh.service testbed.service
+Before=kubelet.service
+#StartLimitBurst=2
+#StartLimitIntervalSec=600
+
+[Service]
+ExecStart=/opt/edgenet/node
+RemainAfterExit=yes
+Type=oneshot
+# CentOS has an old systemd version which doesn't allow restarting oneshot services...
+# (╯°□°)╯︵ ┻━┻
+{% if ansible_os_family != "RedHat" %}
+Restart=on-failure
+RestartSec=10s
+{% endif %}
+
+[Install]
+WantedBy=multi-user.target
